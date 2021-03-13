@@ -348,7 +348,6 @@ class _CropScreenState extends State<CropScreen> {
                 onChangeCrop: (min, max) {
                   _minCrop = min;
                   _maxCrop = max;
-                  print("$min $max");
                 },
               ),
             ),
@@ -365,7 +364,7 @@ class _CropScreenState extends State<CropScreen> {
               ),
               buildSplashTap("16:9", 16 / 9, padding: Margin.horizontal(10)),
               buildSplashTap("1:1", 1 / 1),
-              buildSplashTap("5:4", 5 / 4, padding: Margin.horizontal(10)),
+              buildSplashTap("4:5", 4 / 5, padding: Margin.horizontal(10)),
               buildSplashTap("NO", null, padding: Margin.right(10)),
               Expanded(
                 child: SplashTap(

@@ -144,8 +144,8 @@ class VideoEditorController extends ChangeNotifier {
       notifyListeners();
     } else {
       final width = (maxCrop.dx - minCrop.dx);
-      final max = Offset(width, width / (value * 2));
-      if (value >= 0 && max <= _max) {
+      final max = Offset(width, width / value);
+      if (value > 0 && max <= _max) {
         _preferredCropAspectRatio = value;
         maxCrop = max;
         notifyListeners();

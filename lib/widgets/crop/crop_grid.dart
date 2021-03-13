@@ -50,24 +50,42 @@ class _CropGridViewerState extends State<CropGridViewer> {
   Size _layout = Size.zero;
   Offset _translate = Offset.zero;
 
-  double _rotation = 0.0;
-  double _videoAspectRatio = 1.0;
   double _scale = 1.0;
+  double _rotation = 0.0;
+  double _cropAspectRatio;
+  double _videoAspectRatio = 1.0;
   VideoEditorController _controller;
 
   @override
   void initState() {
     _controller = widget.controller;
-    _boundariesLenght = _controller.cropStyle.boundariesLenght;
     _boundariesWidth = _controller.cropStyle.boundariesWidth;
+    _cropAspectRatio = _controller.preferredCropAspectRatio;
     _videoAspectRatio = _controller.video.value.aspectRatio;
+    _boundariesLenght = _controller.cropStyle.boundariesLenght;
+    _controller.addListener(_controllerListener);
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _controller.removeListener(_controllerListener);
+    _rect.dispose();
+    super.dispose();
   }
 
   @override
   void didUpdateWidget(CropGridViewer oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (!widget.showGrid && !widget.controller.isPlaying) setState(_scaleRect);
+  }
+
+  void _controllerListener() {
+    final preferred = _controller.preferredCropAspectRatio;
+    if (_cropAspectRatio != preferred) {
+      _cropAspectRatio = preferred;
+      _rect.value = _calculateCropRect();
+    }
   }
 
   void _onPanStart(DragStartDetails details) {
@@ -110,7 +128,7 @@ class _CropGridViewerState extends State<CropGridViewer> {
           pos <= Offset(minMargin[1].dx, maxMargin[1].dy)) {
         _boundary = _CropBoundaries.bottomLeft;
         //CENTERS
-      } else if (_controller.preferredCropAspectRatio == null) {
+      } else if (_cropAspectRatio == null) {
         if (pos >= topCenter[0] && pos <= topCenter[1]) {
           _boundary = _CropBoundaries.topCenter;
         } else if (pos >= bottomCenter[0] && pos <= bottomCenter[1]) {
@@ -225,7 +243,7 @@ class _CropGridViewerState extends State<CropGridViewer> {
 
     final double right = left + width;
     final double bottom = top + height;
-    final double aspect = _controller.preferredCropAspectRatio;
+    final double aspect = _cropAspectRatio;
 
     if (height > _boundariesLenght && width > _boundariesLenght) {
       width = right <= _layout.width ? width : _rect.value.width;
