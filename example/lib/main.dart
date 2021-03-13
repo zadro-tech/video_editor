@@ -127,23 +127,23 @@ class _VideoEditorState extends State<VideoEditor> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: _controller.initialized
-          ? AnimatedBuilder(
-              animation: _controller,
-              builder: (_, __) {
-                return Stack(children: [
-                  Column(children: [
-                    _topNavBar(),
-                    Expanded(
-                      child: ClipRRect(
-                        child: CropGridViewer(
-                          controller: _controller,
-                          showGrid: false,
-                        ),
-                      ),
+          ? Stack(children: [
+              Column(children: [
+                _topNavBar(),
+                Expanded(
+                  child: ClipRRect(
+                    child: CropGridViewer(
+                      controller: _controller,
+                      showGrid: false,
                     ),
-                    ..._trimSlider(),
-                  ]),
-                  Center(
+                  ),
+                ),
+                _TrimSlider(controller: _controller, height: height),
+              ]),
+              AnimatedBuilder(
+                animation: _controller.video,
+                builder: (_, __) {
+                  return Center(
                     child: OpacityTransition(
                       visible: !_controller.isPlaying,
                       child: GestureDetector(
@@ -159,26 +159,27 @@ class _VideoEditorState extends State<VideoEditor> {
                         ),
                       ),
                     ),
-                  ),
-                  _customSnackBar(),
-                  ValueListenableBuilder(
-                    valueListenable: _isExporting,
-                    builder: (_, bool export, __) => OpacityTransition(
-                      visible: export,
-                      child: AlertDialog(
-                        title: ValueListenableBuilder(
-                          valueListenable: _exportingProgress,
-                          builder: (_, double value, __) => TextDesigned(
-                            "Exporting video ${(value * 100).ceil()}%",
-                            color: Colors.black,
-                            bold: true,
-                          ),
-                        ),
+                  );
+                },
+              ),
+              _customSnackBar(),
+              ValueListenableBuilder(
+                valueListenable: _isExporting,
+                builder: (_, bool export, __) => OpacityTransition(
+                  visible: export,
+                  child: AlertDialog(
+                    title: ValueListenableBuilder(
+                      valueListenable: _exportingProgress,
+                      builder: (_, double value, __) => TextDesigned(
+                        "Exporting video ${(value * 100).ceil()}%",
+                        color: Colors.black,
+                        bold: true,
                       ),
                     ),
-                  )
-                ]);
-              })
+                  ),
+                ),
+              )
+            ])
           : Center(child: CircularProgressIndicator()),
     );
   }
@@ -219,53 +220,6 @@ class _VideoEditorState extends State<VideoEditor> {
     );
   }
 
-  List<Widget> _trimSlider() {
-    final duration = _controller.videoDuration.inSeconds;
-    final pos = _controller.trimPosition * duration;
-    final start = _controller.minTrim * duration;
-    final end = _controller.maxTrim * duration;
-
-    String formatter(Duration duration) =>
-        duration.inMinutes.remainder(60).toString().padLeft(2, '0') +
-        ":" +
-        (duration.inSeconds.remainder(60)).toString().padLeft(2, '0');
-
-    return [
-      Padding(
-        padding: Margin.horizontal(height / 4),
-        child: Row(children: [
-          TextDesigned(
-            formatter(Duration(seconds: pos.toInt())),
-            color: Colors.white,
-          ),
-          Expanded(child: SizedBox()),
-          OpacityTransition(
-            visible: _controller.isTrimming,
-            child: Row(mainAxisSize: MainAxisSize.min, children: [
-              TextDesigned(
-                formatter(Duration(seconds: start.toInt())),
-                color: Colors.white,
-              ),
-              SizedBox(width: 10),
-              TextDesigned(
-                formatter(Duration(seconds: end.toInt())),
-                color: Colors.white,
-              ),
-            ]),
-          )
-        ]),
-      ),
-      Container(
-        height: height,
-        margin: Margin.all(height / 4),
-        child: TrimSlider(
-          controller: _controller,
-          height: height,
-        ),
-      )
-    ];
-  }
-
   Widget _customSnackBar() {
     return Align(
       alignment: Alignment.bottomCenter,
@@ -285,6 +239,71 @@ class _VideoEditorState extends State<VideoEditor> {
           ),
         ),
       ),
+    );
+  }
+}
+
+class _TrimSlider extends StatelessWidget {
+  const _TrimSlider({
+    Key key,
+    @required VideoEditorController controller,
+    @required this.height,
+  })  : _controller = controller,
+        super(key: key);
+
+  final VideoEditorController _controller;
+  final double height;
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: _controller.video,
+      builder: (_, __) {
+        final duration = _controller.videoDuration.inSeconds;
+        final pos = _controller.trimPosition * duration;
+        final start = _controller.minTrim * duration;
+        final end = _controller.maxTrim * duration;
+
+        String formatter(Duration duration) =>
+            duration.inMinutes.remainder(60).toString().padLeft(2, '0') +
+            ":" +
+            (duration.inSeconds.remainder(60)).toString().padLeft(2, '0');
+
+        return Column(mainAxisSize: MainAxisSize.min, children: [
+          Padding(
+            padding: Margin.horizontal(height / 4),
+            child: Row(children: [
+              TextDesigned(
+                formatter(Duration(seconds: pos.toInt())),
+                color: Colors.white,
+              ),
+              Expanded(child: SizedBox()),
+              OpacityTransition(
+                visible: _controller.isTrimming,
+                child: Row(mainAxisSize: MainAxisSize.min, children: [
+                  TextDesigned(
+                    formatter(Duration(seconds: start.toInt())),
+                    color: Colors.white,
+                  ),
+                  SizedBox(width: 10),
+                  TextDesigned(
+                    formatter(Duration(seconds: end.toInt())),
+                    color: Colors.white,
+                  ),
+                ]),
+              )
+            ]),
+          ),
+          Container(
+            height: height,
+            margin: Margin.all(height / 4),
+            child: TrimSlider(
+              controller: _controller,
+              height: height,
+            ),
+          )
+        ]);
+      },
     );
   }
 }
