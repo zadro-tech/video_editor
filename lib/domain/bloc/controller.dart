@@ -264,7 +264,7 @@ class VideoEditorController extends ChangeNotifier {
   //------------//
   //VIDEO EXPORT//
   //------------//
-  Future<void> _getVideoDimensions() async {
+   Future<void> _getVideoDimensions() async {
     if (!(_videoHeight > 0 && _videoWidth > 0)) {
       final info = await _ffprobe.getMediaInformation(file.path);
       final streams = info.getStreams();
@@ -273,8 +273,8 @@ class VideoEditorController extends ChangeNotifier {
 
       if (streams != null && streams.length > 0) {
         for (var stream in streams) {
-          final width = stream.getAllProperties()['width'];
-          final height = stream.getAllProperties()['height'];
+          int width = stream.getAllProperties()['width'];
+          int height = stream.getAllProperties()['height'];
           final metadataMap = stream.getAllProperties()['side_data_list'];
             if (metadataMap != null) {
                 for (var metadata in metadataMap) {
