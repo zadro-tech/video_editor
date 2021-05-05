@@ -288,6 +288,8 @@ class VideoEditorController extends ChangeNotifier {
                     }
                 }
             }
+          if (width != null && width > _width) _width = width;
+          if (height != null && height > _height) _height = height;
         }
       }
 
