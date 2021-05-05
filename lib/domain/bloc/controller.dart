@@ -275,8 +275,19 @@ class VideoEditorController extends ChangeNotifier {
         for (var stream in streams) {
           final width = stream.getAllProperties()['width'];
           final height = stream.getAllProperties()['height'];
-          if (width != null && width > _width) _width = width;
-          if (height != null && height > _height) _height = height;
+          final metadataMap = stream.getAllProperties()['side_data_list'];
+            if (metadataMap != null) {
+                for (var metadata in metadataMap) {
+                    if (metadata.containsKey('rotation')) {
+                        int rotate = metadata['rotation'];
+                        var rotateTimes = rotate / 90;
+                        if (rotateTimes % 2 != 0) {
+                            width = stream.getAllProperties()['height'];
+                            height = stream.getAllProperties()['width'];
+                        }
+                    }
+                }
+            }
         }
       }
 
